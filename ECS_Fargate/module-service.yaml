@@ -1,0 +1,144 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  Cluster:
+    Type: String
+
+  Repository:
+    Type: String
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+
+  TargetGroup:
+    Type: String
+
+  SourceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  TaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - 'ecs-tasks.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource: "arn:aws:s3:::derazan-backend-env-file/dev.env"
+                Effect: Allow
+                Action:
+                - s3:GetObject
+              - Resource: "arn:aws:s3:::derazan-backend-env-file"
+                Effect: Allow
+                Action:
+                - s3:GetBucketLocation
+      ManagedPolicyArns:
+      - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+
+            
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${AWS::StackName}
+
+  FargateService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref TaskDefinition
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref SourceSecurityGroup
+          Subnets: !Ref Subnets
+      LoadBalancers:
+        - ContainerName: !Join ['-', [!Ref Cluster, !Ref 'AWS::AccountId', 'Container']]
+          ContainerPort: 1337
+          TargetGroupArn: !Ref TargetGroup
+  TaskRole:
+    Metadata:
+      'aws:copilot:description': 'An IAM role to control permissions for the containers in your tasks'
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'ExecuteCommand'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: [
+                  "ssmmessages:CreateControlChannel",
+                  "ssmmessages:OpenControlChannel",
+                  "ssmmessages:CreateDataChannel",
+                  "ssmmessages:OpenDataChannel"
+                ]
+                Resource: "*"
+              - Effect: 'Allow'
+                Action: [
+                  "logs:CreateLogStream",
+                  "logs:DescribeLogGroups",
+                  "logs:DescribeLogStreams",
+                  "logs:PutLogEvents"
+                ]
+                Resource: "*"
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-td
+      RequiresCompatibilities:
+        - "FARGATE"
+      Memory: 2048
+      Cpu: 1024
+      NetworkMode: "awsvpc"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: !Join ['-', [!Ref Cluster, !Ref 'AWS::AccountId', 'Container']]
+          Image: nginx:alpine
+          Memory: 1024
+          PortMappings:
+            - ContainerPort: 1337
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+          environmentFiles:
+            - value: "arn:aws:s3:::derazan-backend-env-file/dev.env"
+              type: s3
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: !Ref AWS::StackName
+
+
+Outputs:
+  Service:
+    Value: !Ref FargateService
