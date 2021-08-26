@@ -125,6 +125,8 @@ Resources:
           Memory: 1024
           PortMappings:
             - ContainerPort: 1337
+          healthCheck:
+            timeout: 30
           Environment:
             - Name: AWS_REGION
               Value: !Ref AWS::Region
