@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: 2010-09-09
 
 
 Description: >
-  Cloudformation template for continuous testing pipeline that starts and stop ecs fargate tasks for cost savings.
+  Cloudformation template for continuous pipeline that build and deploy to ecs fargate tasks.
 
 Parameters:
   ConnectionArn:
@@ -15,7 +15,7 @@ Parameters:
 
   GitHubRepo:
     Type: String
-    Default: knawat/b2b-backend
+    Default: Mhm0ud/b2b-backend
     Description: The repo name of the sample service.
 
   GitHubBranch:
@@ -25,13 +25,27 @@ Parameters:
 
   Route53HostedZoneName:
     Type: String
-    Default: derzan.xyz
+    Default: domain.xyz
     Description: The name of the hosted zone.
 
   DomainName:
     Type: String
-    Default: Name-of-the-pr.api.derzan.xyz
+    Default: Name-of-the-pr.api.domain.xyz
     Description: The domain name of the app.
+
+  S3EnvBucketLocation: 
+    Default: "arn:aws:s3:::backend-env-file"
+    Description : "Env Bucket Location, Must be the ARN of the S3 bucket."
+    Type: "String"
+    MinLength: "1"
+    MaxLength: "64"
+  
+  S3EnvObject: 
+    Default: "dev.env"
+    Description : "Name of the Env file in the S3 Bucket"
+    Type: "String"
+    MinLength: "1"
+    MaxLength: "64"
     
   TemplateBucket:
     Type: String
@@ -60,6 +74,11 @@ Metadata:
         Parameters:
           - Route53HostedZoneName
           - DomainName
+      - Label:
+          default: Evironment file configuration
+        Parameters:
+          - S3EnvBucketLocation
+          - S3EnvObject
       - Label:
           default: Stack Configuration
         Parameters:
@@ -118,6 +137,8 @@ Resources:
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !GetAtt VPC.Outputs.Subnets
         Repository: !GetAtt ECR.Outputs.Repository
+        S3EnvBucketLocation: !Ref S3EnvBucketLocation
+        S3EnvObject: !Ref S3EnvObject
 
 Outputs:
   ServiceUrl:
