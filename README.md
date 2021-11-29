@@ -1,6 +1,7 @@
 # Deploy containerized application using Elastic Container Service and CloudFormation
 
   Cloudformation template to build and deploy your containerized application to ecs fargate, and configure the CI/CD process using AWS pipeline.
+  This template is fully implemented to deploy your app setup your CI/CD without any other action.
 
 ## This stack will create
 
