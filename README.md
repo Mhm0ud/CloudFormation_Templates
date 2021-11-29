@@ -1,7 +1,22 @@
-# CloudFormation_Templates
+# Deploy containerized application using Elastic Container Service and CloudFormation
 
-  Cloudformation template to create CI/CD using AWS pipeline that build and deploy Nodejs App to ecs fargate tasks.
+  Cloudformation template to build and deploy your containerized application to ecs fargate, and configure the CI/CD process using AWS pipeline.
 
+## This stack will create
+
+1. VPC with two subnets, one private and one public.
+2. ECS Cluster.
+3. ECR to host your build image.
+4. Fraget service and task.
+5. Loadbalancer.
+6. SSL certificate for your domain.
+7. Code Pipeline.
+
+## Steps of Code Pipeline
+
+1. Retrive the last update from your code on GitHub.
+2. Build the application using the Dockerfile that conatin in your app.
+3. Deploy the build image to your ECS cluster.
 
 ## Parameters
 
