@@ -1,6 +1,6 @@
 # CloudFormation_Templates
 
-  Cloudformation template to create CI/CD using AWS pipeline that build and deploy to ecs fargate tasks.
+  Cloudformation template to create CI/CD using AWS pipeline that build and deploy Nodejs App to ecs fargate tasks.
 
 
 ## Parameters
@@ -32,6 +32,10 @@ Environment variable Bucket Location, Must be the ARN of the S3 bucket. we will 
 ### S3EnvObject
 
 Name of the Environment variable file in the S3 Bucket.
+
+### ContainerPort
+
+The port of your app.
 
 ### TemplateBucket
 
