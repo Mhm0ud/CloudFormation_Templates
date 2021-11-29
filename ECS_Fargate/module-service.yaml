@@ -22,6 +22,12 @@ Parameters:
   Subnets:
     Type: List<AWS::EC2::Subnet::Id>
 
+  S3EnvBucketLocation: 
+    Type: "String"
+  
+  S3EnvObject: 
+    Type: "String"
+
 Resources:
   TaskExecutionRole:
     Type: 'AWS::IAM::Role'
@@ -40,11 +46,11 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Resource: "arn:aws:s3:::derazan-backend-env-file/dev.env"
+              - Resource: !Join ['/', [!Ref S3EnvBucketLocation, !Ref S3EnvObject]]
                 Effect: Allow
                 Action:
                 - s3:GetObject
-              - Resource: "arn:aws:s3:::derazan-backend-env-file"
+              - Resource: !Ref S3EnvBucketLocation
                 Effect: Allow
                 Action:
                 - s3:GetBucketLocation
@@ -129,7 +135,7 @@ Resources:
             - Name: AWS_REGION
               Value: !Ref AWS::Region
           environmentFiles:
-            - value: "arn:aws:s3:::derazan-backend-env-file/dev.env"
+            - value: !Join ['/', [!Ref S3EnvBucketLocation, !Ref S3EnvObject]]
               type: s3
           LogConfiguration:
             LogDriver: awslogs
