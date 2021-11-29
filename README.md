@@ -64,3 +64,5 @@ The S3 bucket from which to fetch the templates used by this stack.
 4. check `I acknowledge that AWS CloudFormation might create IAM resources with custom names`, and `I acknowledge that AWS CloudFormation might require the following capability: CAPABILITY_AUTO_EXPAND`
 5. Create stack.
 
+or, you can use it with gitub action.
+
