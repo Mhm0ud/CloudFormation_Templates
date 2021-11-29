@@ -33,6 +33,11 @@ Parameters:
     Default: Name-of-the-pr.api.domain.xyz
     Description: The domain name of the app.
 
+  ContainerPort:
+    Type: Number
+    Default: 1337
+    Description: The port of your app.
+
   S3EnvBucketLocation: 
     Default: "arn:aws:s3:::backend-env-file"
     Description : "Env Bucket Location, Must be the ARN of the S3 bucket."
@@ -79,6 +84,7 @@ Metadata:
         Parameters:
           - S3EnvBucketLocation
           - S3EnvObject
+          - ContainerPort
       - Label:
           default: Stack Configuration
         Parameters:
@@ -116,6 +122,7 @@ Resources:
         VpcId: !GetAtt VPC.Outputs.VpcId
         Route53HostedZoneName: !Ref Route53HostedZoneName
         DomainName: !Ref DomainName
+        ContainerPort: !Ref ContainerPort
 
   VPC:
     Type: AWS::CloudFormation::Stack
@@ -139,6 +146,7 @@ Resources:
         Repository: !GetAtt ECR.Outputs.Repository
         S3EnvBucketLocation: !Ref S3EnvBucketLocation
         S3EnvObject: !Ref S3EnvObject
+        ContainerPort: !Ref ContainerPort
 
 Outputs:
   ServiceUrl:

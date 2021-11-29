@@ -15,6 +15,10 @@ Parameters:
   DomainName:
     Type: String
 
+  ContainerPort:
+    Type: Number
+    Default: 1337
+
 Resources:
   SecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -31,8 +35,8 @@ Resources:
           ToPort: 443
         - CidrIp: "0.0.0.0/0"
           IpProtocol: "TCP"
-          FromPort: 1337  
-          ToPort: 1337
+          FromPort: !Ref ContainerPort  
+          ToPort: !Ref ContainerPort
       VpcId: !Ref VpcId
 
   LoadBalancer:
@@ -87,7 +91,7 @@ Resources:
     DependsOn: LoadBalancer
     Properties:
       VpcId: !Ref VpcId
-      Port: 1337
+      Port: !Ref ContainerPort
       Protocol: HTTP
       Matcher:
         HttpCode: 200-299

@@ -27,6 +27,10 @@ Parameters:
   
   S3EnvObject: 
     Type: "String"
+  
+  ContainerPort:
+    Type: Number
+    Default: 1337
 
 Resources:
   TaskExecutionRole:
@@ -79,7 +83,7 @@ Resources:
           Subnets: !Ref Subnets
       LoadBalancers:
         - ContainerName: !Join ['-', [!Ref Cluster, !Ref 'AWS::AccountId', 'Container']]
-          ContainerPort: 1337
+          ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref TargetGroup
   TaskRole:
     Metadata:
@@ -130,7 +134,7 @@ Resources:
           Image: nginx:alpine
           Memory: 1024
           PortMappings:
-            - ContainerPort: 1337
+            - ContainerPort: !Ref ContainerPort
           Environment:
             - Name: AWS_REGION
               Value: !Ref AWS::Region
