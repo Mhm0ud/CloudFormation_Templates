@@ -139,8 +139,8 @@ Resources:
             - Name: AWS_REGION
               Value: !Ref AWS::Region
           environmentFiles:
-            - value: !Join ['/', [!Ref S3EnvBucketLocation, !Ref S3EnvObject]]
-              type: s3
+            - Value: !Join ['/', [!Ref S3EnvBucketLocation, !Ref S3EnvObject]]
+              Type: s3
           LogConfiguration:
             LogDriver: awslogs
             Options:
