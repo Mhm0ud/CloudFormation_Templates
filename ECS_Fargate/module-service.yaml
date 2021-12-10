@@ -138,7 +138,7 @@ Resources:
           Environment:
             - Name: AWS_REGION
               Value: !Ref AWS::Region
-          environmentFiles:
+          EnvironmentFiles:
             - Value: !Join ['/', [!Ref S3EnvBucketLocation, !Ref S3EnvObject]]
               Type: s3
           LogConfiguration:
