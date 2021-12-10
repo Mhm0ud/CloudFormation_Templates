@@ -17,7 +17,7 @@ Parameters:
 
   ContainerPort:
     Type: Number
-    Default: 1337
+    Default: 80
 
 Resources:
   SecurityGroup:

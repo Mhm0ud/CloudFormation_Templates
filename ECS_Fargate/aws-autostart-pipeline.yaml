@@ -35,7 +35,7 @@ Parameters:
 
   ContainerPort:
     Type: Number
-    Default: 1337
+    Default: 80
     Description: The port of your app.
 
   S3EnvBucketLocation: 
