@@ -28,6 +28,21 @@ Parameters:
     Default: domain.xyz
     Description: The name of the hosted zone.
 
+  Cluster:
+    Type: String
+    Default: DevCluster
+    Description: The name of the ECS Cluster.
+    
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Default: subnetsIDs
+    Description: The id of the subnets.
+    
+  VpcId:
+    Type: String
+    Default: VPCID
+    Description: The id of the VPC.
+
   DomainName:
     Type: String
     Default: Name-of-the-pr.api.domain.xyz
@@ -85,17 +100,15 @@ Metadata:
           - S3EnvBucketLocation
           - S3EnvObject
           - ContainerPort
+          - Cluster
+          - Subnets
+          - VpcId
       - Label:
           default: Stack Configuration
         Parameters:
           - TemplateBucket
 
 Resources:
-  Cluster:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-ecs-cluster.yaml"
-
   ECR:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -106,7 +119,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-deployment-pipeline.yaml"
       Parameters:
-        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        Cluster: !Ref Cluster
         Service: !GetAtt Service.Outputs.Service
         ConnectionArn: !Ref ConnectionArn
         GitHubRepo: !Ref GitHubRepo
@@ -118,31 +131,21 @@ Resources:
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-load-balancer.yaml"
       Parameters:
-        Subnets: !GetAtt VPC.Outputs.Subnets
-        VpcId: !GetAtt VPC.Outputs.VpcId
+        Subnets: !Ref Subnets
+        VpcId: !Ref VpcId
         Route53HostedZoneName: !Ref Route53HostedZoneName
         DomainName: !Ref DomainName
         ContainerPort: !Ref ContainerPort
-
-  VPC:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-vpc.yaml"
-      Parameters:
-        Name: !Ref AWS::StackName
-        VpcCIDR: 10.215.0.0/16
-        Subnet1CIDR: 10.215.10.0/24
-        Subnet2CIDR: 10.215.20.0/24
 
   Service:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-service.yaml"
       Parameters:
-        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        Cluster: !Ref Cluster
         TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
         SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
-        Subnets: !GetAtt VPC.Outputs.Subnets
+        Subnets: !Ref Subnets
         Repository: !GetAtt ECR.Outputs.Repository
         S3EnvBucketLocation: !Ref S3EnvBucketLocation
         S3EnvObject: !Ref S3EnvObject
