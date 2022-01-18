@@ -23,30 +23,15 @@ Parameters:
     Default: develop
     Description: The branch of the repo to continuously deploy.
 
-  Route53HostedZoneName:
-    Type: String
-    Default: domain.xyz
-    Description: The name of the hosted zone.
-
   Cluster:
     Type: String
     Default: DevCluster
     Description: The name of the ECS Cluster.
     
   Subnets:
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: String
     Default: subnetsIDs
     Description: The id of the subnets.
-    
-  VpcId:
-    Type: String
-    Default: VPCID
-    Description: The id of the VPC.
-
-  DomainName:
-    Type: String
-    Default: Name-of-the-pr.api.domain.xyz
-    Description: The domain name of the app.
 
   ContainerPort:
     Type: Number
@@ -90,11 +75,6 @@ Metadata:
           - GitHubBranch
           - ConnectionArn
       - Label:
-          default: Domain configuration
-        Parameters:
-          - Route53HostedZoneName
-          - DomainName
-      - Label:
           default: Evironment file configuration
         Parameters:
           - S3EnvBucketLocation
@@ -102,7 +82,6 @@ Metadata:
           - ContainerPort
           - Cluster
           - Subnets
-          - VpcId
       - Label:
           default: Stack Configuration
         Parameters:
@@ -126,25 +105,12 @@ Resources:
         GitHubBranch: !Ref GitHubBranch
         Repository: !GetAtt ECR.Outputs.Repository
 
-  LoadBalancer:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-load-balancer.yaml"
-      Parameters:
-        Subnets: !Ref Subnets
-        VpcId: !Ref VpcId
-        Route53HostedZoneName: !Ref Route53HostedZoneName
-        DomainName: !Ref DomainName
-        ContainerPort: !Ref ContainerPort
-
   Service:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "https://s3.amazonaws.com/${TemplateBucket}/module-service.yaml"
       Parameters:
         Cluster: !Ref Cluster
-        TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
-        SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
         Subnets: !Ref Subnets
         Repository: !GetAtt ECR.Outputs.Repository
         S3EnvBucketLocation: !Ref S3EnvBucketLocation
@@ -152,10 +118,6 @@ Resources:
         ContainerPort: !Ref ContainerPort
 
 Outputs:
-  ServiceUrl:
-    Description: The sample service that is being continuously deployed.
-    Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
-
   PipelineUrl:
     Description: The continuous deployment pipeline in the AWS Management Console.
     Value: !GetAtt DeploymentPipeline.Outputs.PipelineUrl
