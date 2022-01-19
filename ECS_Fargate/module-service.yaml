@@ -13,12 +13,6 @@ Parameters:
     Type: Number
     Default: 1
 
-  TargetGroup:
-    Type: String
-
-  SourceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup::Id
-
   Subnets:
     Type: List<AWS::EC2::Subnet::Id>
 
@@ -78,13 +72,7 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
-          SecurityGroups:
-            - !Ref SourceSecurityGroup
           Subnets: !Ref Subnets
-      LoadBalancers:
-        - ContainerName: !Join ['-', [!Ref Cluster, !Ref 'AWS::AccountId', 'Container']]
-          ContainerPort: !Ref ContainerPort
-          TargetGroupArn: !Ref TargetGroup
   TaskRole:
     Metadata:
       'aws:copilot:description': 'An IAM role to control permissions for the containers in your tasks'
