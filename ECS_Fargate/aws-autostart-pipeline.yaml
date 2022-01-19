@@ -34,7 +34,7 @@ Parameters:
     Description: The name of the ECS Cluster.
     
   Subnets:
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: String
     Default: subnetsIDs
     Description: The id of the subnets.
     
